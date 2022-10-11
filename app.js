@@ -2,10 +2,13 @@ const express = require('express');
 const app = express();
 const { getCategories } = require("./controllers/categories.controller");
 const { getReviewsById } = require("./controllers/reviews.controller");
+const { getUsers } = require("./controllers/users.controller");
 
 app.get("/api/categories", getCategories);
 
 app.get("/api/reviews/:review_id", getReviewsById);
+
+app.get("/api/users", getUsers);
 
 app.all("*", (req,res) => {
     res.status(404).send({message: "No Valid Endpoint"});
