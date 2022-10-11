@@ -34,13 +34,64 @@ describe("GET /api/categories", () => {
     })
 })
 
-describe("404 no valid endpoint", () => {
-    test("404 responds with message of no valid endpoint", () => {
+describe("GET /api/reviews/:review_id", () => {
+    test("200 responds with a review object containing the correct information ", () => {
         return request(app)
-            .get("/api/categoories")
+            .get("/api/reviews/1")
+            .expect(200)
+            .then(({ body: {review} }) => {
+                expect(review).toEqual(
+                    expect.objectContaining({
+                        review_id: 1,
+                        title: expect.any(String),
+                        review_body: expect.any(String),
+                        designer: expect.any(String),
+                        review_img_url: expect.any(String),
+                        votes: expect.any(Number),
+                        category: expect.any(String),
+                        created_at: expect.any(String),
+                    })
+                )
+            expect(review).toEqual({
+                review_id: 1,
+                title: 'Agricola',
+                designer: 'Uwe Rosenberg',
+                owner: 'mallionaire',
+                review_img_url:
+                    'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                review_body: 'Farmyard fun!',
+                category: 'euro game',
+                created_at: "2021-01-18T10:00:20.514Z",
+                votes: 1  
+            })
+         })
+    })
+    test("400 responds with an error when invalid id", () => {
+        return request(app)
+            .get("/api/reviews/invalidId")
+            .expect(400)
+            .then(( {body: { message } }) => {
+                expect(message).toBe("Invalid Request")
+            })
+    })
+    test("404 responds with an error when id doesn't exist in database", () => {
+        return request(app)
+            .get("/api/reviews/9999")
+            .expect(404)
+            .then(( { body }) => {
+                console.log(body)
+                expect(body.message).toBe("Review 9999 Not Found")
+            })
+    })
+})
+
+describe("Complete Error Handling", () => {
+    test("404 responds with error when endpoint does not exist", () => {
+        return request(app)
+            .get('/api/notfound')
             .expect(404)
             .then(({ body }) => {
-                expect(body.message).toBe("No Valid Endpoint")
-            })
+                expect(body.message).toBe('No Valid Endpoint')
+        })
     })
 })
