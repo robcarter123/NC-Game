@@ -1,6 +1,6 @@
-const { selectCategories } = require("../models/model");
+const { selectCategories } = require("../models/categories.model");
 
-const getCategories = (req,res,next) => {
+const getCategories = (req,res) => {
     selectCategories().then(({ rows: categories }) => {
         res.status(200).send(categories)    
     })
