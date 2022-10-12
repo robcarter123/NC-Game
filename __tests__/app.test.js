@@ -71,7 +71,7 @@ describe("GET /api/reviews/:review_id", () => {
             .get("/api/reviews/invalidId")
             .expect(400)
             .then(( {body: { message } }) => {
-                expect(message).toBe("Invalid Request")
+                expect(message).toBe("Bad Request")
             })
     })
     test("404 responds with an error when id doesn't exist in database", () => {
@@ -91,7 +91,7 @@ describe("Complete Error Handling", () => {
             .get('/api/notfound')
             .expect(404)
             .then(({ body }) => {
-                expect(body.message).toBe('No Valid Endpoint')
+                expect(body.message).toBe('Invalid Route')
         })
     })
 })
@@ -117,7 +117,7 @@ describe("GET /api/users", () => {
     })
 })
 
-describe.only("PATCH /api/reviews/:review_id", () => {
+describe("PATCH /api/reviews/:review_id", () => {
     test("200 responds with an updated object when vote increased", () => {
         const increaseVotes = {
             inc_votes: 1,
@@ -177,7 +177,7 @@ describe.only("PATCH /api/reviews/:review_id", () => {
             .send(increaseVotes)
             .expect(400)
             .then(({ body: {message} }) => {
-                expect(message).toBe("Invalid ID")
+                expect(message).toBe("Bad Request")
                 
                 })
             })
@@ -195,6 +195,19 @@ describe.only("PATCH /api/reviews/:review_id", () => {
                     expect(message).toBe('Review 999 Not Found')
                 })
             })
+            test("400 responds with error when passed no number id", () => {
+                const increaseVotes = {
+                    inc_votes: 1,
+                }
+        
+                return request(app)
+                    .patch("/api/reviews/notanid")
+                    .send(increaseVotes)
+                    .expect(400)
+                    .then(({ body: { message } }) => {
+                        expect(message).toBe('Bad Request')
+                    })
+                })
         
     })
 
