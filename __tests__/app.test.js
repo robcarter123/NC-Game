@@ -96,14 +96,14 @@ describe("Complete Error Handling", () => {
     })
 })
 
-describe.only("GET /api/users", () => {
+describe("GET /api/users", () => {
     test("200 responds with an array of user objects", () => {
         return request(app)
             .get("/api/users")
             .expect(200)
             .then(({ body : users }) => {
                 expect(users).toHaveLength(4);
-                
+
                 users.forEach((user) => {
                     expect(user).toEqual(
                         expect.objectContaining({
@@ -116,4 +116,85 @@ describe.only("GET /api/users", () => {
             })
     })
 })
+
+describe.only("PATCH /api/reviews/:review_id", () => {
+    test("200 responds with an updated object when vote increased", () => {
+        const increaseVotes = {
+            inc_votes: 1,
+        }
+
+        return request(app)
+            .patch("/api/reviews/2")
+            .send(increaseVotes)
+            .expect(200)
+            .then(({ body: {review} }) => {
+                expect(review).toEqual({
+                    review_id: 2,
+                    title: 'Jenga',
+                    designer: 'Leslie Scott',
+                    owner: 'philippaclaire9',
+                    review_img_url:
+                    'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    review_body: 'Fiddly fun for all the family',
+                    category: 'dexterity',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 6
+                })
+            })
+
+    })
+    test("200 responds with an updated object when vote decreased", () => {
+        const decreaseVotes = {
+            inc_votes: -1,
+        }
+        return request(app)
+            .patch("/api/reviews/2")
+            .send(decreaseVotes)
+            .expect(200)
+            .then(({ body: {review} }) => {
+                expect(review).toEqual({
+                    review_id: 2,
+                    title: 'Jenga',
+                    designer: 'Leslie Scott',
+                    owner: 'philippaclaire9',
+                    review_img_url:
+                    'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    review_body: 'Fiddly fun for all the family',
+                    category: 'dexterity',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 4
+                })
+            })
+
+    })
+    test("400 responds with an error when incorrect key value", () => {
+        const increaseVotes = {
+            inc_votes: 'two',
+        }
+
+        return request(app)
+            .patch("/api/reviews/2")
+            .send(increaseVotes)
+            .expect(400)
+            .then(({ body: {message} }) => {
+                expect(message).toBe("Invalid ID")
+                
+                })
+            })
+    
+        test("404 responds with error when passed invalidID", () => {
+            const increaseVotes = {
+                inc_votes: 1,
+            }
+    
+            return request(app)
+                .patch("/api/reviews/999")
+                .send(increaseVotes)
+                .expect(404)
+                .then(({ body: { message } }) => {
+                    expect(message).toBe('Review 999 Not Found')
+                })
+            })
+        
+    })
 
