@@ -50,6 +50,7 @@ describe("GET /api/reviews/:review_id", () => {
                         votes: expect.any(Number),
                         category: expect.any(String),
                         created_at: expect.any(String),
+                        comment_count: expect.any(Number)
                     })
                 )
             expect(review).toEqual({
@@ -62,7 +63,8 @@ describe("GET /api/reviews/:review_id", () => {
                 review_body: 'Farmyard fun!',
                 category: 'euro game',
                 created_at: "2021-01-18T10:00:20.514Z",
-                votes: 1  
+                votes: 1,
+                comment_count: 0,
             })
          })
     })
@@ -83,6 +85,26 @@ describe("GET /api/reviews/:review_id", () => {
                 expect(body.message).toBe("Review 9999 Not Found")
             })
     })
+    test("200 responds with a review object when provided a review id and includes a comment count", () => {
+        return request(app)
+            .get("/api/reviews/3")
+            .expect(200)
+            .then(( { body: {review}}) => {
+                expect(review).toEqual({
+                    review_id: 3,
+                    title: 'Ultimate Werewolf',
+                    category: 'social deduction',
+                    designer: 'Akihisa Okui',
+                    owner: 'bainesface',
+                    review_body: "We couldn't find the werewolf!",
+                    review_img_url: 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 5,
+                    comment_count: 3
+                  })
+            })
+        })
+
 })
 
 describe("Complete Error Handling", () => {
