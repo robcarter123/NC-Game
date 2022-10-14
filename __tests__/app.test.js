@@ -81,7 +81,6 @@ describe("GET /api/reviews/:review_id", () => {
             .get("/api/reviews/9999")
             .expect(404)
             .then(( { body }) => {
-                console.log(body)
                 expect(body.message).toBe("Review 9999 Not Found")
             })
     })
@@ -106,6 +105,95 @@ describe("GET /api/reviews/:review_id", () => {
         })
 
 })
+
+describe('GET /api/reviews?queries', () => {
+    test("200 responds with array of reviews when passed no query", () => {
+        return request(app)
+            .get("/api/reviews")
+            .expect(200)
+            .then(({ body: reviews }) => {
+                expect(reviews).toHaveLength(13);
+
+                reviews.forEach((review) => {
+                    expect(review).toEqual(
+                        expect.objectContaining({
+                            owner: expect.any(String),
+                            title: expect.any(String),
+                            review_id: expect.any(Number),
+                            category: expect.any(String),
+                            review_img_url: expect.any(String),
+                            created_at: expect.any(String),
+                            designer: expect.any(String),
+                            comment_count: expect.any(Number)
+                        })
+                    )
+                })
+            })
+    })
+    test("200 responds with an array of review objects sorted by date when passed no query", () => {
+        return request(app)
+            .get("/api/reviews")
+            .expect(200)
+            .then(({ body: reviews}) => {
+            const sortReviews = reviews.map((review) => {
+                return { ... review };
+            });
+
+            const compareDates = (a,b) => {
+                if(a.created_at > b.created_at){
+                    return -1;
+                }
+                else if(a.created_at < b.created_at) {
+                    return 1;
+                }
+                else {return 0}
+                }
+                sortReviews.sort(compareDates);
+                expect(reviews).toEqual(sortReviews);
+            })
+    })
+    test("200 successfully responds when passed category query", () => {
+        return request(app)
+            .get("/api/reviews?category=dexterity")
+            .expect(200)
+            .then(({ body: reviews}) => {
+
+            expect(reviews).toEqual([
+                {
+                    review_id: 2,
+                    title: 'Jenga',
+                    category: 'dexterity',
+                    designer: 'Leslie Scott',
+                    owner: 'philippaclaire9',
+                    review_body: 'Fiddly fun for all the family',
+                    review_img_url: 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 5,
+                    comment_count: 3
+                  }
+            ])
+
+        })
+    })
+    test("200 responds with empty array when passed category query with no games", () => {
+        return request(app)
+            .get("/api/reviews?category=children's games")
+            .expect(200)
+            .then(({ body: reviews}) => {
+                console.log(reviews);
+            expect(reviews).toEqual([])
+        })
+    })
+    test("404 returns error when passed invalid query", () => {
+        return request(app)
+            .get("/api/reviews?category=incorrectCategory")
+            .expect(404)
+            .then(({ body: {message}}) => {
+                expect(message).toBe("Category Not Found");
+            })
+    })
+})
+
 
 describe("Complete Error Handling", () => {
     test("404 responds with error when endpoint does not exist", () => {
