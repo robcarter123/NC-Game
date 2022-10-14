@@ -30,8 +30,6 @@ const selectReviews = (category) => {
         categories = result[1].rows;
     }
 
-    console.log(categories, reviews);
-
     if(reviews.length === 0) {
       if(categories.length === 0) {
         return Promise.reject({ status: 404, message: "Category Not Found"})

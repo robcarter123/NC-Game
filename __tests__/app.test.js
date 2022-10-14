@@ -180,7 +180,6 @@ describe('GET /api/reviews?queries', () => {
             .get("/api/reviews?category=children's games")
             .expect(200)
             .then(({ body: reviews}) => {
-                console.log(reviews);
             expect(reviews).toEqual([])
         })
     })
