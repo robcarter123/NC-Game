@@ -81,7 +81,6 @@ describe("GET /api/reviews/:review_id", () => {
             .get("/api/reviews/9999")
             .expect(404)
             .then(( { body }) => {
-                console.log(body)
                 expect(body.message).toBe("Review 9999 Not Found")
             })
     })
@@ -108,14 +107,6 @@ describe("GET /api/reviews/:review_id", () => {
 })
 
 describe('GET /api/reviews?queries', () => {
-    test("200 responds with array of reviews when passed no query", () => {
-        return request(app)
-            .get("/api/reviews")
-            .expect(200)
-            .then(({ body: reviews }) => {
-                expect(reviews).toHaveLength(13);
-            })
-    })
     test("200 responds with array of reviews when passed no query", () => {
         return request(app)
             .get("/api/reviews")
@@ -184,12 +175,21 @@ describe('GET /api/reviews?queries', () => {
 
         })
     })
-    test("400 returns error when passed invalid query", () => {
+    test("200 responds with empty array when passed category query with no games", () => {
+        return request(app)
+            .get("/api/reviews?category=children's games")
+            .expect(200)
+            .then(({ body: reviews}) => {
+                console.log(reviews);
+            expect(reviews).toEqual([])
+        })
+    })
+    test("404 returns error when passed invalid query", () => {
         return request(app)
             .get("/api/reviews?category=incorrectCategory")
-            .expect(400)
+            .expect(404)
             .then(({ body: {message}}) => {
-                expect(message).toBe("Invalid Category");
+                expect(message).toBe("Category Not Found");
             })
     })
 })
