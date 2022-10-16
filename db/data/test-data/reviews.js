@@ -114,7 +114,7 @@ module.exports = [
     category: 'social deduction',
     created_at: new Date(1610964101251),
     votes: 10
-  },
+  }, 
   {
     title: "That's just what an evil person would say!",
     designer: 'Fiona Lohoar',

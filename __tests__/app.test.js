@@ -211,3 +211,64 @@ describe("PATCH /api/reviews/:review_id", () => {
         
     })
 
+describe("POST /api/reviews/review_id/comments", () => {
+    test("201 reponds with an object that is a posted comment to database", () => {
+        const postComment = {
+            username: "mallionaire",
+            body: "What a great game!"
+        };
+        return request(app)
+            .post("/api/reviews/1/comments")
+            .send(postComment)
+            .expect(201)
+            .then(({ body : {comment}}) => {
+                expect(comment).toEqual({
+                    comment_id: 7,
+                    author: "mallionaire",
+                    body: "What a great game!",
+                    votes: 0,
+                    review_id: 1,
+                    created_at: expect.any(String)
+                })
+            })
+        })
+    test("400 responds with an error when invalid id", () => {
+        const postComment = {
+            username: "mallionaire",
+            body: "What a great game!"
+        };
+        return request(app)
+            .post("/api/reviews/invalidId/comments")
+            .send(postComment)
+            .expect(400)
+            .then(({body: {message}}) => {
+                expect(message).toBe("Bad Request")
+            })
+    })
+    test("404 responds with error when given a username that does not exist", () => {
+        const postComment = {
+            username: "notausername",
+            body: "What a great game!"
+        };
+        return request(app)
+            .post("/api/reviews/1/comments")
+            .send(postComment)
+            .expect(404)
+            .then(({body: {message}}) => {
+                expect(message).toBe("Not found")
+            })
+    })
+    test("404 responds with error when passed an id that does not exist", () => {
+        const postComment = {
+            username: "mallionaire",
+            body: "What a great game!"
+        };
+        return request(app)
+            .post("/api/reviews/999/comments")
+            .send(postComment)
+            .expect(404)
+            .then(({body: {message}}) => {
+                expect(message).toBe("Not found")
+            })
+    })
+})
