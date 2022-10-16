@@ -29,8 +29,17 @@ const updatedReviewsById = (review_id, inc_votes) => {
     }
     return review;
   })
-
-
 }
 
-  module.exports = { selectReviewById, updatedReviewsById };
+const addReviewComment = (review_id, reqBody) => {
+  const {username, body} = reqBody;
+  return db
+    .query(`INSERT INTO comments (body, review_id, author) VALUES ($1, $2, $3) RETURNING *`,
+    [body, review_id, username])
+    .then(({rows: [comment]}) => {
+      console.log(comment)
+      return comment;
+    })
+}
+
+module.exports = { selectReviewById, updatedReviewsById, addReviewComment };
