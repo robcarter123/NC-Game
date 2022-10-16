@@ -4,10 +4,11 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 
+
 afterAll(() => {
-    console.log('<<<<<')
-        db.end();
-    });
+console.log('<<<<<')
+    db.end();
+});
 
 beforeEach(() => {
     return seed(data);
@@ -27,10 +28,10 @@ describe("GET /api/categories", () => {
                         expect.objectContaining({
                             slug: expect.any(String),
                             description: expect.any(String),
-                        })
-                    )
-                })
+                    })
+                )
             })
+        })
     })
 })
 
@@ -53,20 +54,20 @@ describe("GET /api/reviews/:review_id", () => {
                         comment_count: expect.any(Number)
                     })
                 )
-                expect(review).toEqual({
-                    review_id: 1,
-                    title: 'Agricola',
-                    designer: 'Uwe Rosenberg',
-                    owner: 'mallionaire',
-                    review_img_url:
-                        'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
-                    review_body: 'Farmyard fun!',
-                    category: 'euro game',
-                    created_at: "2021-01-18T10:00:20.514Z",
-                    votes: 1,
-                    comment_count: 0,
-                })
+            expect(review).toEqual({
+                review_id: 1,
+                title: 'Agricola',
+                designer: 'Uwe Rosenberg',
+                owner: 'mallionaire',
+                review_img_url:
+                    'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                review_body: 'Farmyard fun!',
+                category: 'euro game',
+                created_at: "2021-01-18T10:00:20.514Z",
+                votes: 1,
+                comment_count: 0,
             })
+         })
     })
     test("400 responds with an error when invalid id", () => {
         return request(app)
@@ -100,58 +101,61 @@ describe("GET /api/reviews/:review_id", () => {
                     created_at: '2021-01-18T10:01:41.251Z',
                     votes: 5,
                     comment_count: 3
+                  })
+            })
+        })
+
+})
+
+describe.only('GET /api/reviews/:review_id/comments', () => {
+    test('200 responds with array of comments for given id and correct properties', () => {
+        request(app)
+            .get('/api/reviews/2/comments')
+            .expect(200)
+            .then(({ body: { comments }}) => {
+                expect(comments).toHaveLength(3);
+                comments.forEach((comment) => {
+                    expect(comment).toEqual(
+                        expect.objectContaining({
+                            comment_id: expect.any(Number),
+                            votes: expect.any(Number),
+                            created_at: expect.any(String),
+                            author: expect.any(String),
+                            body: expect.any(String),
+                            review_id: 2,
+                        })
+                    )
                 })
             })
     })
-})
-// describe('GET /api/reviews/:review_id/comments', () => {
-//     test('200 responds with array of comments for given id and correct properties', () => {
-//         request(app)
-//             .get('/api/reviews/2/comments')
-//             .expect(200)
-//             .then(({ body: { comments }}) => {
-//                 expect(comments).toHaveLength(3);
-//                 comments.forEach((comment) => {
-//                     expect(comment).toEqual(
-//                         expect.objectContaining({
-//                             comment_id: expect.any(Number),
-//                             votes: expect.any(Number),
-//                             created_at: expect.any(String),
-//                             author: expect.any(String),
-//                             body: expect.any(String),
-//                             review_id: 2,
-//                         })
-//                     )
-//                 })
-//             })
-//     })
-//     test('200 responds with an array of comment objects ordered by most recent', () => {
-//         return request(app)
-//             .get("/api/reviews/3/comments")
-//             .expect(200)
-//             .then(({ body: { comments }}) => {
-//                 expect(comments).toBeSortedBy('created_at', {
-//                     descending: true,
-//                 });
-//             })
-//     })
-//     test('400 returns error when passed invalid id', () => {
-//         return request(app)
-//             .get("/api/reviews/invalidId/comments")
-//             .expect(400)
-//             .then(({ body: { message } }) => {
-//                 expect(message).toBe('Bad Request');
-//             })
-//     })
-//     test('404 returns error when passed id that does not exist', () => {
-//         return request(app)
-//             .get("/api/reviews/999/comments")
-//             .expect(404)
-//             .then(({ body: { message } }) => {
-//                 expect(message).toBe('Review 999 Not Found');
-//             })
-//     })
-// })
+    test('200 responds with an array of comment objects ordered by most recent', () => {
+        return request(app)
+            .get("/api/reviews/3/comments")
+            .expect(200)
+            .then(({ body: { comments }}) => {
+                expect(comments).toBeSortedBy('created_at', {
+                    descending: true,
+                  });
+            })
+    })
+
+    test('400 returns error when passed invalid id', () => {
+            return request(app)
+                .get("/api/reviews/invalidId/comments")
+                .expect(400)
+                .then(({ body: { message } }) => {
+                    expect(message).toBe('Bad Request');
+                })
+            })
+    test('404 returns error when passed id that does not exist', () => {
+        return request(app)
+            .get("/api/reviews/999/comments")
+            .expect(404)
+            .then(({ body: { message } }) => {
+                expect(message).toBe('Review 999 Not Found');
+            })
+        })
+    })
 
 describe('GET /api/reviews?queries', () => {
     test("200 responds with array of reviews when passed no query", () => {
@@ -274,6 +278,7 @@ describe("GET /api/users", () => {
 })
 
 describe("PATCH /api/reviews/:review_id", () => {
+    console.log('describe block ere')
     test("200 responds with an updated object when vote increased", () => {
         const increaseVotes = {
             inc_votes: 1,
@@ -337,31 +342,34 @@ describe("PATCH /api/reviews/:review_id", () => {
                 
             })
     })
-    test("404 responds with error when passed invalidID", () => {
-        const increaseVotes = {
-            inc_votes: 1,
-        }
-
-        return request(app)
-            .patch("/api/reviews/999")
-            .send(increaseVotes)
-            .expect(404)
-            .then(({ body: { message } }) => {
-                expect(message).toBe('Review 999 Not Found')
+    
+        test("404 responds with error when passed invalidID", () => {
+            const increaseVotes = {
+                inc_votes: 1,
+            }
+    
+            return request(app)
+                .patch("/api/reviews/999")
+                .send(increaseVotes)
+                .expect(404)
+                .then(({ body: { message } }) => {
+                    expect(message).toBe('Review 999 Not Found')
             })
-    })
-    test("400 responds with error when passed no number id", () => {
-        const increaseVotes = {
-            inc_votes: 1,
-        }
-
-        return request(app)
-            .patch("/api/reviews/notanid")
-            .send(increaseVotes)
-            .expect(400)
-            .then(({ body: { message } }) => {
-                expect(message).toBe('Bad Request')
-            })
-    })
+        })
+        test("400 responds with error when passed no number id", () => {
+                const increaseVotes = {
+                    inc_votes: 1,
+                }
+        
+                return request(app)
+                    .patch("/api/reviews/notanid")
+                    .send(increaseVotes)
+                    .expect(400)
+                    .then(({ body: { message } }) => {
+                        expect(message).toBe('Bad Request')
+                })
+        })
         
 })
+
+

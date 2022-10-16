@@ -30,8 +30,6 @@ const selectReviews = (category) => {
         categories = result[1].rows;
     }
 
-    console.log(categories, reviews);
-
     if(reviews.length === 0) {
       if(categories.length === 0) {
         return Promise.reject({ status: 404, message: "Category Not Found"})
@@ -58,6 +56,16 @@ const selectReviewById = (review_id) => {
       });
   };
 
+const selectCommentsByReviewId = (review_id) => {
+  return db
+    .query(`SELECT * FROM comments WHERE review_id=$1 ORDER BY created_at DESC`,
+    [review_id]
+    ).then(({ rows: comments }) => {
+      console.log(comments)
+      return comments;
+    });
+};
+
 const updatedReviewsById = (review_id, inc_votes) => {
   return db
   .query(`UPDATE reviews SET votes = votes + $1 WHERE review_id=$2 RETURNING *;`,
@@ -72,7 +80,6 @@ const updatedReviewsById = (review_id, inc_votes) => {
     return review;
   })
 
-
 }
 
-  module.exports = { selectReviewById, updatedReviewsById, selectReviews };
+  module.exports = { selectReviewById, updatedReviewsById, selectReviews, selectCommentsByReviewId };

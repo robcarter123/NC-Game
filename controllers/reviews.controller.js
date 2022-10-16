@@ -1,4 +1,4 @@
-const { selectReviewById, updatedReviewsById, selectReviews } = require("../models/reviews.model");
+const { selectReviewById, updatedReviewsById, selectReviews, selectCommentsByReviewId } = require("../models/reviews.model");
 
 const getReviews = (req, res, next) => {
   selectReviews(req.query.category)
@@ -15,6 +15,19 @@ const getReviewsById = (req, res, next) => {
       .catch(next);
   };
 
+const getCommentsByReviewId = (req, res, next) => {
+  const { review_id } = req.params;
+  const promises = [
+    selectCommentsByReviewId(review_id),
+    selectReviewById(review_id),
+  ]
+  Promise.all(promises)
+    .then(([comments, review]) => {
+      res.status(200).send({ comments });
+    })
+    .catch(next);
+}
+
   const patchReviewsById = (req, res, next) => {
     updatedReviewsById(req.params.review_id, req.body.inc_votes)
     .then((review) => {
@@ -22,4 +35,4 @@ const getReviewsById = (req, res, next) => {
     }).catch(next);
   }
 
-  module.exports = { getReviewsById, patchReviewsById, getReviews };
+  module.exports = { getReviewsById, patchReviewsById, getReviews, getCommentsByReviewId };
