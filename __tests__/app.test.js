@@ -255,7 +255,7 @@ describe("POST /api/reviews/review_id/comments", () => {
             .send(postComment)
             .expect(404)
             .then(({body: {message}}) => {
-                expect(message).toBe("Not found")
+                expect(message).toBe("Not Found")
             })
     })
     test("404 responds with error when passed an id that does not exist", () => {
@@ -268,7 +268,7 @@ describe("POST /api/reviews/review_id/comments", () => {
             .send(postComment)
             .expect(404)
             .then(({body: {message}}) => {
-                expect(message).toBe("Not found")
+                expect(message).toBe("Not Found")
             })
     })
 })
