@@ -4,10 +4,10 @@ const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 
-
 afterAll(() => {
-    db.end();
-});
+    console.log('<<<<<')
+        db.end();
+    });
 
 beforeEach(() => {
     return seed(data);
@@ -27,10 +27,10 @@ describe("GET /api/categories", () => {
                         expect.objectContaining({
                             slug: expect.any(String),
                             description: expect.any(String),
-                    })
-                )
+                        })
+                    )
+                })
             })
-        })
     })
 })
 
@@ -50,21 +50,23 @@ describe("GET /api/reviews/:review_id", () => {
                         votes: expect.any(Number),
                         category: expect.any(String),
                         created_at: expect.any(String),
+                        comment_count: expect.any(Number)
                     })
                 )
-            expect(review).toEqual({
-                review_id: 1,
-                title: 'Agricola',
-                designer: 'Uwe Rosenberg',
-                owner: 'mallionaire',
-                review_img_url:
-                    'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
-                review_body: 'Farmyard fun!',
-                category: 'euro game',
-                created_at: "2021-01-18T10:00:20.514Z",
-                votes: 1  
+                expect(review).toEqual({
+                    review_id: 1,
+                    title: 'Agricola',
+                    designer: 'Uwe Rosenberg',
+                    owner: 'mallionaire',
+                    review_img_url:
+                        'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    review_body: 'Farmyard fun!',
+                    category: 'euro game',
+                    created_at: "2021-01-18T10:00:20.514Z",
+                    votes: 1,
+                    comment_count: 0,
+                })
             })
-         })
     })
     test("400 responds with an error when invalid id", () => {
         return request(app)
@@ -79,11 +81,165 @@ describe("GET /api/reviews/:review_id", () => {
             .get("/api/reviews/9999")
             .expect(404)
             .then(( { body }) => {
-                console.log(body)
                 expect(body.message).toBe("Review 9999 Not Found")
             })
     })
+    test("200 responds with a review object when provided a review id and includes a comment count", () => {
+        return request(app)
+            .get("/api/reviews/3")
+            .expect(200)
+            .then(( { body: {review}}) => {
+                expect(review).toEqual({
+                    review_id: 3,
+                    title: 'Ultimate Werewolf',
+                    category: 'social deduction',
+                    designer: 'Akihisa Okui',
+                    owner: 'bainesface',
+                    review_body: "We couldn't find the werewolf!",
+                    review_img_url: 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 5,
+                    comment_count: 3
+                })
+            })
+    })
 })
+// describe('GET /api/reviews/:review_id/comments', () => {
+//     test('200 responds with array of comments for given id and correct properties', () => {
+//         request(app)
+//             .get('/api/reviews/2/comments')
+//             .expect(200)
+//             .then(({ body: { comments }}) => {
+//                 expect(comments).toHaveLength(3);
+//                 comments.forEach((comment) => {
+//                     expect(comment).toEqual(
+//                         expect.objectContaining({
+//                             comment_id: expect.any(Number),
+//                             votes: expect.any(Number),
+//                             created_at: expect.any(String),
+//                             author: expect.any(String),
+//                             body: expect.any(String),
+//                             review_id: 2,
+//                         })
+//                     )
+//                 })
+//             })
+//     })
+//     test('200 responds with an array of comment objects ordered by most recent', () => {
+//         return request(app)
+//             .get("/api/reviews/3/comments")
+//             .expect(200)
+//             .then(({ body: { comments }}) => {
+//                 expect(comments).toBeSortedBy('created_at', {
+//                     descending: true,
+//                 });
+//             })
+//     })
+//     test('400 returns error when passed invalid id', () => {
+//         return request(app)
+//             .get("/api/reviews/invalidId/comments")
+//             .expect(400)
+//             .then(({ body: { message } }) => {
+//                 expect(message).toBe('Bad Request');
+//             })
+//     })
+//     test('404 returns error when passed id that does not exist', () => {
+//         return request(app)
+//             .get("/api/reviews/999/comments")
+//             .expect(404)
+//             .then(({ body: { message } }) => {
+//                 expect(message).toBe('Review 999 Not Found');
+//             })
+//     })
+// })
+
+describe('GET /api/reviews?queries', () => {
+    test("200 responds with array of reviews when passed no query", () => {
+        return request(app)
+            .get("/api/reviews")
+            .expect(200)
+            .then(({ body: reviews }) => {
+                expect(reviews).toHaveLength(13);
+
+                reviews.forEach((review) => {
+                    expect(review).toEqual(
+                        expect.objectContaining({
+                            owner: expect.any(String),
+                            title: expect.any(String),
+                            review_id: expect.any(Number),
+                            category: expect.any(String),
+                            review_img_url: expect.any(String),
+                            created_at: expect.any(String),
+                            designer: expect.any(String),
+                            comment_count: expect.any(Number)
+                        })
+                    )
+                })
+            })
+    })
+    test("200 responds with an array of review objects sorted by date when passed no query", () => {
+        return request(app)
+            .get("/api/reviews")
+            .expect(200)
+            .then(({ body: reviews}) => {
+            const sortReviews = reviews.map((review) => {
+                return { ... review };
+            });
+
+            const compareDates = (a,b) => {
+                if(a.created_at > b.created_at){
+                    return -1;
+                }
+                else if(a.created_at < b.created_at) {
+                    return 1;
+                }
+                else {return 0}
+                }
+                sortReviews.sort(compareDates);
+                expect(reviews).toEqual(sortReviews);
+            })
+    })
+    test("200 successfully responds when passed category query", () => {
+        return request(app)
+            .get("/api/reviews?category=dexterity")
+            .expect(200)
+            .then(({ body: reviews}) => {
+
+            expect(reviews).toEqual([
+                {
+                    review_id: 2,
+                    title: 'Jenga',
+                    category: 'dexterity',
+                    designer: 'Leslie Scott',
+                    owner: 'philippaclaire9',
+                    review_body: 'Fiddly fun for all the family',
+                    review_img_url: 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+                    created_at: '2021-01-18T10:01:41.251Z',
+                    votes: 5,
+                    comment_count: 3
+                  }
+            ])
+
+        })
+    })
+    test("200 responds with empty array when passed category query with no games", () => {
+        return request(app)
+            .get("/api/reviews?category=children's games")
+            .expect(200)
+            .then(({ body: reviews}) => {
+            expect(reviews).toEqual([])
+        })
+    })
+    test("404 returns error when passed invalid query", () => {
+        return request(app)
+            .get("/api/reviews?category=incorrectCategory")
+            .expect(404)
+            .then(({ body: {message}}) => {
+                expect(message).toBe("Category Not Found");
+            })
+    })
+})
+
 
 describe("Complete Error Handling", () => {
     test("404 responds with error when endpoint does not exist", () => {
@@ -179,35 +335,135 @@ describe("PATCH /api/reviews/:review_id", () => {
             .then(({ body: {message} }) => {
                 expect(message).toBe("Bad Request")
                 
-                })
             })
-    
-        test("404 responds with error when passed invalidID", () => {
-            const increaseVotes = {
-                inc_votes: 1,
-            }
-    
-            return request(app)
-                .patch("/api/reviews/999")
-                .send(increaseVotes)
-                .expect(404)
-                .then(({ body: { message } }) => {
-                    expect(message).toBe('Review 999 Not Found')
-                })
-            })
-            test("400 responds with error when passed no number id", () => {
-                const increaseVotes = {
-                    inc_votes: 1,
-                }
-        
-                return request(app)
-                    .patch("/api/reviews/notanid")
-                    .send(increaseVotes)
-                    .expect(400)
-                    .then(({ body: { message } }) => {
-                        expect(message).toBe('Bad Request')
-                    })
-                })
-        
     })
+    test("404 responds with error when passed invalidID", () => {
+        const increaseVotes = {
+            inc_votes: 1,
+        }
 
+        return request(app)
+            .patch("/api/reviews/999")
+            .send(increaseVotes)
+            .expect(404)
+            .then(({ body: { message } }) => {
+                expect(message).toBe('Review 999 Not Found')
+            })
+    })
+    test("400 responds with error when passed no number id", () => {
+        const increaseVotes = {
+            inc_votes: 1,
+        }
+
+        return request(app)
+            .patch("/api/reviews/notanid")
+            .send(increaseVotes)
+            .expect(400)
+            .then(({ body: { message } }) => {
+                expect(message).toBe('Bad Request')
+            })
+    })
+        
+})
+
+describe("POST: /api/reviews/:review_id/comments", () => {
+    test("201: responds with comment object that has been added to database", () => {
+      const commentToPost = {
+        username: "mallionaire",
+        body: "I love this game!",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(commentToPost)
+        .expect(201)
+        .then(({ body: { comment } }) => {
+          expect(comment).toEqual({
+            comment_id: 7,
+            author: "mallionaire",
+            body: "I love this game!",
+            votes: 0,
+            review_id: 1,
+            created_at: expect.any(String),
+          });
+        });
+    });
+    test("201: ignores any additional keys on request body and completes post request successfully", () => {
+      const commentToPost = {
+        username: "mallionaire",
+        body: "I love this game!",
+        votes: 4,
+      };
+
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(commentToPost)
+        .expect(201)
+        .then(({ body: { comment } }) => {
+          expect(comment).toEqual({
+            comment_id: 7,
+            author: "mallionaire",
+            body: "I love this game!",
+            votes: 0,
+            review_id: 1,
+            created_at: expect.any(String),
+          });
+        });
+    });
+    describe("Error Handling", () => {
+      test("400: responds with error when passed an invalid id", () => {
+        const commentToPost = {
+          username: "mallionaire",
+          body: "I love this game!",
+        };
+
+        return request(app)
+          .post("/api/reviews/notAnId/comments")
+          .send(commentToPost)
+          .expect(400)
+          .then(({ body: { message } }) => {
+            expect(message).toBe("Bad Request");
+          });
+      });
+      test("400: responds with error when post body missing required fields", () => {
+        const commentToPost = {
+          body: "I love this game!",
+        };
+
+        return request(app)
+          .post("/api/reviews/1/comments")
+          .send(commentToPost)
+          .expect(400)
+          .then(({ body: { message } }) => {
+            expect(message).toBe("Bad Request");
+          });
+      });
+      test("404: responds with error when given username does not exist in the database", () => {
+        const commentToPost = {
+          username: "robc",
+          body: "I love this game!",
+        };
+
+        return request(app)
+          .post("/api/reviews/1/comments")
+          .send(commentToPost)
+          .expect(404)
+          .then(({ body: { message } }) => {
+            expect(message).toBe("Not found");
+          });
+      });
+      test("404: responds with error when passed id that does not exist", () => {
+        const commentToPost = {
+          username: "mallionaire",
+          body: "I love this game!",
+        };
+
+        return request(app)
+          .post("/api/reviews/100/comments")
+          .send(commentToPost)
+          .expect(404)
+          .then(({ body: { message } }) => {
+            expect(message).toBe("Not found");
+          });
+      });
+    });
+});
