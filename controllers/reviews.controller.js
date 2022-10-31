@@ -29,6 +29,13 @@ const getCommentsByReviewId = (req, res, next) => {
     }).catch(next);
   }
 
+  const getReviews = (req, res, next) => {
+    selectReviews(req.query.category)
+    .then((reviews) => {
+      res.status(200).send(reviews);
+    }).catch(next);
+  }
+
   const postComment = (req, res, next) => {
     addComment(req.params.review_id, req.body)
       .then((comment) => {

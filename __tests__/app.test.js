@@ -51,7 +51,6 @@ describe("GET /api/reviews/:review_id", () => {
                         category: expect.any(String),
                         created_at: expect.any(String),
                         comment_count: expect.any(Number)
-                        comment_count: expect.any(Number)
                     })
                 )
                 expect(review).toEqual({
