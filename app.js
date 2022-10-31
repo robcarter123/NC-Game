@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const { getCategories } = require("./controllers/categories.controller");
 const { getReviewsById, patchReviewsById, getCommentsByReviewId, postComment } = require("./controllers/reviews.controller");
@@ -8,7 +9,7 @@ const { handlePSQLErrors, handleCustomErrors, handleInternalErrors, handleInvali
 
 
 app.use(express.json());
-
+app.use(cors())
 app.get("/api/categories", getCategories);
 
 app.get("/api/reviews/:review_id", getReviewsById);
