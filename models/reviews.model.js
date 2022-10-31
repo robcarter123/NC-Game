@@ -40,6 +40,7 @@ const selectReviews = (category) => {
   })
 
 }
+}
 const selectReviewById = (review_id) => {
     return db
       .query(`SELECT reviews.*, (SELECT COUNT(*)::int FROM comments WHERE review_id=$1)
@@ -55,6 +56,16 @@ const selectReviewById = (review_id) => {
         }
       });
   };
+
+const selectCommentsByReviewId = (review_id) => {
+  return db
+    .query(`SELECT * FROM comments WHERE review_id=$1 ORDER BY created_at DESC`,
+    [review_id]
+    ).then(({ rows: comments }) => {
+      console.log(comments)
+      return comments;
+    });
+};
 
 const selectCommentsByReviewId = (review_id) => {
   return db
